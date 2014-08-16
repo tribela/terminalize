@@ -1,0 +1,50 @@
+.terminal-main {
+  margin: auto;
+  box-sizing: border-box;
+  overflow-y: auto;
+  max-height: 100%;
+  border: 3px solid #eee;
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(0, 0, 0, .7);
+  color: white;
+  font: 14px 'Courier New' monospace;
+}
+
+.terminal-ps1 {
+  float: left;
+  bottom: 0;
+}
+
+.terminal-input-wrap {
+    overflow: hidden;
+    height: auto;
+    height: 1%;
+}
+
+.terminal-input {
+    width: 100%;
+    background: transparent;
+    color: white;
+    border: 0 none;
+    margin: 0;
+    padding: 0;
+    outline: 0 none;
+    font: inherit;
+}
+
+.terminal-green {
+  color: green;
+}
+
+.terminal-red {
+  color: red;
+}
+
+.terminal-blue {
+  color: blue;
+}
+
+.terminal-red {
+  color: blue;
+}
