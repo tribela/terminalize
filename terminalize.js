@@ -271,6 +271,26 @@ var terminalize = function(elem) {
     print(output.join(verbose?'\n':' '), true);
   };
 
+  commands.cd = function(args) {
+    if ( ! args.length) {
+      return;
+    }
+
+    var path = args[0];
+    var dst = dir.getDir(path);
+
+    switch(dst.type) {
+      case 'directory':
+        dir = dst;
+        break;
+      case 'specialdirectory':
+        location.href = dst.dest;
+        break;
+      default:
+        print(dst.name + ' is not a directory.');
+    }
+  }
+
 
   parseList(elem, root);
 
@@ -372,7 +392,7 @@ Directory.prototype.getDir = function(dir){
     }else if(dirname == "."){
       curdir = curdir;
     }else{
-      curdir = curdir.getChildByName(dirname);
+      curdir = curdir.getChild(dirname);
     }
 
     if(curdir == null){
