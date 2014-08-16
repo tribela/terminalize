@@ -77,6 +77,7 @@ Terminal.prototype.keyHandler = function(event) {
       this.historyPointer = this.histories.length;
       this.doCommand();
       this.parsePs1();
+      this.main.scrollTop(this.main.outerHeight());
       break;
     case 0x26: // Up arrow
       if (this.historyPointer == this.histories.length) {
