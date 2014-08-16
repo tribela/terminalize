@@ -1,344 +1,351 @@
-var terminalize = function(elem) {
-  var main = $('<div>');
-  var log = $('<div>');
+var Terminal = function(elem) {
+  this.main = $('<div>');
+  this.log = $('<div>');
+  this.ps1 = $('<span>');
+  this.input = $('<input>');
+
   var lastLine = $('<div>');
-  var ps1 = $('<span>');
   var inputWrap = $('<div>');
-  var input = $('<input>');
 
-  var ps1Str = '<span class="terminal-red">|ID|</span>@<span class="terminal-blue">|HOST|</span>:<span class="terminal-yellow">|PWD|</span>$&nbsp;';
-  var commands = {};
-  var root = new Directory();
-  var dir = root;
-  var histories = [];
-  var historyPointer = 0;
-  var lineBuffer;
+  this.ps1Str = '<span class="terminal-red">|ID|</span>@<span class="terminal-blue">|HOST|</span>:<span class="terminal-yellow">|PWD|</span>$&nbsp;';
+  this.root = new Directory();
+  this.dir = this.root;
+  this.histories = [];
+  this.historyPointer = 0;
+  this.lineBuffer;
 
-  var print = function(msg, isHtml) {
-    var pre = $('<pre>');
-    pre.addClass('terminal-output');
-    if (isHtml) {
-      pre.html(msg);
-    } else {
-      pre.text(msg);
-    }
-    log.append(pre);
+  this.commands = {
+    help: $.proxy(this.commandHelp, this),
+    ls: $.proxy(this.commandLs, this),
+    cd: $.proxy(this.commandCd, this),
+    cat: $.proxy(this.commandCat, this),
   };
 
-  var keyHandler = function(event) {
-    switch(event.keyCode) {
-      case 0x0d: // Return
-        event.preventDefault();
-        if (input.val()) {
-          histories.push(input.val());
-        }
-        historyPointer = histories.length;
-        doCommand();
-        parsePs1();
-        break;
-      case 0x26: // Up arrow
-        if (historyPointer == histories.length) {
-          lineBuffer = input.val();
-        }
-        if (historyPointer > 0) {
-          historyPointer -= 1;
-          input.val(histories[historyPointer]);
-        }
-        break;
-      case 0x28: // Down arrow
-        if (historyPointer >= histories.length) {
-          break;
-        }
+  parseList(elem, this.root);
 
-        historyPointer += 1;
-        if (historyPointer == histories.length) {
-          input.val(lineBuffer);
-        } else {
-          input.val(histories[historyPointer]);
-        }
-        break;
-    }
-  };
 
-  var doCommand = function() {
-    var line = input.val();
-    var psStr = ps1.html();
-    var escapedLine = $('<span>').text(line).html();
-    print(psStr + escapedLine, true);
+  this.main.addClass('terminal-main');
+  this.log.addClass('terminal-log');
+  this.ps1.addClass('terminal-ps1');
+  inputWrap.addClass('terminal-input-wrap');
+  this.input.addClass('terminal-input');
 
-    var args = parseLine(line);
-    var command = args.shift();
-    if (command in commands) {
-      commands[command](args);
-    } else {
-      print('command not found: ' + command);
-    }
 
-    input.val(null);
-  };
+  this.parsePs1();
 
-  var parseLine = function(command){
-    var states = {
-      normal: 'normal',
-      whitespace: 'whitespace',
-      backslash: 'backslash',
-      quote: 'quote',
-      singlequote: 'singlequote'
-    };
-    var state = states.normal;
-    var prevstate = state; // for backslash mode
+  this.main.append(this.log);
+  this.main.append(lastLine);
 
-    var args = [];
-    var buffer = "";
-    for(var i=0; i<command.length; i++){
-      var input = command[i];
-      switch(state){
-        case states.normal:
-          switch(input){
-            case '\\':
-              prevstate = state;
-              state = states.backslash;
-              break;
-            case '\"':
-              state = states.quote;
-              break;
-            case '\'':
-              state = states.singlequote;
-              break;
-            case ' ':
-              state = states.whitespace;
-              args.push(buffer);
-              buffer = "";
-              break;
-            default:
-              buffer += input;
-          }
-          break;
-        case states.whitespace:
-          switch(input){
-            case ' ':
-              break;
-            case '\\':
-              //new character. same as default
-              prevstate = states.normal;
-              state = states.backslash;
-              break;
-            case '\"':
-              state = states.quote;
-              break;
-            case '\'':
-              state = states.singlequote;
-              break;
-            default:
-              buffer += input;
-              state = states.normal;
-          }
-          break;
-        case states.backslash:
-          buffer += input;
-          state = prevstate;
-          break;
-        case states.quote:
-          switch(input){
-            case '\"':
-              state = states.normal;
-              break;
-            case '\\':
-              prevstate = state;
-              state = states.backslash;
-              break;
-            default:
-              buffer += input;
-          }
-          break;
-        case states.singlequote:
-          switch(input){
-            case '\'':
-              state = states.normal;
-              break;
-            case '\\':
-              prevstate = state;
-              state = states.backslash;
-              break;
-            default:
-              buffer += input;
-          }
-          break;
+  lastLine.append(this.ps1);
+  lastLine.append(inputWrap);
+  inputWrap.append(this.input);
+
+  this.input.on('keydown', $.proxy(this.keyHandler, this));
+  this.main.on('click', $.proxy(function() { this.input.focus(); }, this));
+
+  $(elem).replaceWith(this.main);
+  this.input.focus();
+}
+
+Terminal.prototype.print = function(msg, isHtml) {
+  var pre = $('<pre>');
+  pre.addClass('terminal-output');
+  if (isHtml) {
+    pre.html(msg);
+  } else {
+    pre.text(msg);
+  }
+  this.log.append(pre);
+};
+
+Terminal.prototype.keyHandler = function(event) {
+  switch(event.keyCode) {
+    case 0x0d: // Return
+      event.preventDefault();
+      var line = this.input.val();
+      if (line) {
+        this.histories.push(line);
       }
-    }
-    if(state == states.normal || state == states.whitespace){
-      if(buffer.length > 0){
-        args.push(buffer);
+      this.historyPointer = this.histories.length;
+      this.doCommand();
+      this.parsePs1();
+      break;
+    case 0x26: // Up arrow
+      if (this.historyPointer == this.histories.length) {
+        this.lineBuffer = this.input.val();
       }
-      return args
+      if (this.historyPointer > 0) {
+        this.historyPointer -= 1;
+        this.input.val(this.histories[this.historyPointer]);
+      }
+      break;
+    case 0x28: // Down arrow
+      if (this.historyPointer >= this.histories.length) {
+        break;
+      }
+
+      this.historyPointer += 1;
+      if (this.historyPointer == this.histories.length) {
+        this.input.val(this.lineBuffer);
+      } else {
+        this.input.val(this.histories[this.historyPointer]);
+      }
+      break;
+  }
+};
+
+Terminal.prototype.doCommand = function() {
+  var line = this.input.val();
+  var psStr = this.ps1.html();
+  var escapedLine = $('<span>').text(line).html();
+  this.print(psStr + escapedLine, true);
+
+  var args = this.parseLine(line);
+  var command = args.shift();
+  if (command in this.commands) {
+    this.commands[command](args);
+  } else {
+    this.print('command not found: ' + command);
+  }
+
+  this.input.val(null);
+};
+
+Terminal.prototype.parseLine = function(command){
+  var states = {
+    normal: 'normal',
+    whitespace: 'whitespace',
+    backslash: 'backslash',
+    quote: 'quote',
+    singlequote: 'singlequote'
+  };
+  var state = states.normal;
+  var prevstate = state; // for backslash mode
+
+  var args = [];
+  var buffer = "";
+  for(var i=0; i<command.length; i++){
+    var input = command[i];
+    switch(state){
+      case states.normal:
+        switch(input){
+          case '\\':
+            prevstate = state;
+            state = states.backslash;
+            break;
+          case '\"':
+            state = states.quote;
+            break;
+          case '\'':
+            state = states.singlequote;
+            break;
+          case ' ':
+            state = states.whitespace;
+            args.push(buffer);
+            buffer = "";
+            break;
+          default:
+            buffer += input;
+        }
+        break;
+      case states.whitespace:
+        switch(input){
+          case ' ':
+            break;
+          case '\\':
+            //new character. same as default
+            prevstate = states.normal;
+            state = states.backslash;
+            break;
+          case '\"':
+            state = states.quote;
+            break;
+          case '\'':
+            state = states.singlequote;
+            break;
+          default:
+            buffer += input;
+            state = states.normal;
+        }
+        break;
+      case states.backslash:
+        buffer += input;
+        state = prevstate;
+        break;
+      case states.quote:
+        switch(input){
+          case '\"':
+            state = states.normal;
+            break;
+          case '\\':
+            prevstate = state;
+            state = states.backslash;
+            break;
+          default:
+            buffer += input;
+        }
+        break;
+      case states.singlequote:
+        switch(input){
+          case '\'':
+            state = states.normal;
+            break;
+          case '\\':
+            prevstate = state;
+            state = states.backslash;
+            break;
+          default:
+            buffer += input;
+        }
+        break;
+    }
+  }
+  if(state == states.normal || state == states.whitespace){
+    if(buffer.length > 0){
+      args.push(buffer);
+    }
+    return args
+  }else{
+    print("Command line parse error");
+  }
+};
+
+Terminal.prototype.parsePs1 = function() {
+  this.ps1.html(this.ps1Str
+      .replace('|ID|', 'guest')
+      .replace('|HOST|', 'localhost')
+      .replace('|PWD|', this.dir.getPath())
+      );
+};
+
+var parseList = function(elem, dir) {
+  var lis = $(elem).children('li');
+  lis.each(function() {
+    var name = $(this).children('h1').text();
+    var uls = $(this).children('ul');
+    var anchor = $(this).children('a');
+    var content = $(this).contents().filter(function() {
+      return this.nodeType == 3;
+    }).text().trim();
+    var current;
+
+    if (uls.length) {
+      current = new Directory(name);
+      dir.append(current);
+      uls.each(function() {
+        parseList(this, current);
+      });
+    } else if (anchor.length) {
+      current = new SpecialDirectory(anchor.text(), anchor.attr('href'));
+      dir.append(current);
+    } else {
+      current = new File(name, content);
+      dir.append(current);
+    }
+  });
+};
+
+Terminal.prototype.commandHelp = function() {
+  for (command in this.commands) {
+    this.print(command);
+  }
+};
+
+Terminal.prototype.commandLs = function(args) {
+  var showHidden = false;
+  var verbose = false;
+  var destination = this.dir.getPath();
+  var results;
+  var output;
+
+  for(var i=0; i<args.length; i++){
+    if(args[i][0] == '-'){
+      if(args[i].indexOf('a') > -1){
+        showHidden = true;
+      }
+      if(args[i].indexOf('l') > -1){
+        verbose = true;
+      }
     }else{
-      print("Command line parse error");
+      destination = args[i];
     }
   }
 
-  var parsePs1 = function() {
-    ps1.html(ps1Str
-        .replace('|ID|', 'guest')
-        .replace('|HOST|', 'localhost')
-        .replace('|PWD|', dir.getPath())
-        );
-  };
+  var obj = this.dir.getDir(destination);
+  if (obj == null) {
+    this.print('File or directory not found.');
+    return;
+  }
 
-  var parseList = function(elem, dir) {
-    var lis = $(elem).children('li');
-    lis.each(function() {
-      var name = $(this).children('h1').text();
-      var uls = $(this).children('ul');
-      var anchor = $(this).children('a');
-      var content = $(this).contents().filter(function() {
-        return this.nodeType == 3;
-      }).text().trim();
-      var current;
+  if (obj.type == 'directory') {
+    results = obj.list(showHidden);
+  } else {
+    results = [obj];
+  }
 
-      if (uls.length) {
-        current = new Directory(name);
-        dir.append(current);
-        uls.each(function() {
-          parseList(this, current);
-        });
-      } else if (anchor.length) {
-        current = new SpecialDirectory(anchor.text(), anchor.attr('href'));
-        dir.append(current);
-      } else {
-        current = new File(name, content);
-        dir.append(current);
-      }
-    });
-  };
-
-  commands.help = function() {
-    for (command in commands) {
-      print(command);
-    }
-  };
-
-  commands.ls = function(args) {
-    var showHidden = false;
-    var verbose = false;
-    var destination = dir.getPath();
-    var results;
-    var output;
-
-    for(var i=0; i<args.length; i++){
-      if(args[i][0] == '-'){
-        if(args[i].indexOf('a') > -1){
-          showHidden = true;
-        }
-        if(args[i].indexOf('l') > -1){
-          verbose = true;
-        }
-      }else{
-        destination = args[i];
-      }
-    }
-
-    var obj = dir.getDir(destination);
-    if (obj == null) {
-      print('File or directory not found.');
-      return;
-    }
-
-    if (obj.type == 'directory') {
-      results = obj.list(showHidden);
-    } else {
-      results = [obj];
-    }
-
-    output = results.map(function(obj) {
-      var format;
-      var name;
-      switch(obj.type) {
-        case 'directory':
-          format = 'dr-xr-xr-x';
-          name = '<span class="terminal-blue">' + obj.name + '</span>';
-          break;
-        case 'specialdirectory':
-          format = 'sr-xr-xr-x';
-          name = '<span class="terminal-yellow">' + obj.name + '</span>';
-          break;
-        default:
-          format = '-r-xr-xr-x';
-          name = obj.name;
-      }
-      return (verbose?format + ' ':'') + name;
-    });
-
-    print(output.join(verbose?'\n':' '), true);
-  };
-
-  commands.cd = function(args) {
-    if ( ! args.length) {
-      return;
-    }
-
-    var path = args[0];
-    var dst = dir.getDir(path);
-
-    if ( ! dst) {
-      print('File or directory not found.');
-      return;
-    }
-
-    switch(dst.type) {
+  output = results.map(function(obj) {
+    var format;
+    var name;
+    switch(obj.type) {
       case 'directory':
-        dir = dst;
+        format = 'dr-xr-xr-x';
+        name = '<span class="terminal-blue">' + obj.name + '</span>';
         break;
       case 'specialdirectory':
-        location.href = dst.dest;
+        format = 'sr-xr-xr-x';
+        name = '<span class="terminal-yellow">' + obj.name + '</span>';
         break;
       default:
-        print(dst.name + ' is not a directory.');
+        format = '-r-xr-xr-x';
+        name = obj.name;
     }
-  }
+    return (verbose?format + ' ':'') + name;
+  });
 
-  commands.cat = function(args) {
-    if ( ! args.length) {
-      return;
-    }
-
-    var path = args[0];
-    var dst = dir.getDir(path);
-
-    if ( ! dst) {
-      print('File or Directory not found');
-    } else if (dst.type != 'file') {
-      print(dst.name + 'is not a file.');
-    } else {
-      print(dst.content);
-    }
-  }
-
-
-  parseList(elem, root);
-
-
-  main.addClass('terminal-main');
-  log.addClass('terminal-log');
-  ps1.addClass('terminal-ps1');
-  inputWrap.addClass('terminal-input-wrap');
-  input.addClass('terminal-input');
-
-
-  parsePs1();
-
-  main.append(log);
-  main.append(lastLine);
-
-  lastLine.append(ps1);
-  lastLine.append(inputWrap);
-  inputWrap.append(input);
-
-  input.on('keydown', keyHandler);
-  main.on('click', function() { input.focus(); });
-
-  $(elem).replaceWith(main);
-  input.focus();
+  this.print(output.join(verbose?'\n':' '), true);
 };
+
+Terminal.prototype.commandCd = function(args) {
+  if ( ! args.length) {
+    return;
+  }
+
+  var path = args[0];
+  var dst = this.dir.getDir(path);
+
+  if ( ! dst) {
+    this.print('File or directory not found.');
+    return;
+  }
+
+  switch(dst.type) {
+    case 'directory':
+      this.dir = dst;
+      break;
+    case 'specialdirectory':
+      location.href = dst.dest;
+      break;
+    default:
+      this.print(dst.name + ' is not a directory.');
+  }
+}
+
+Terminal.prototype.commandCat = function(args) {
+  if ( ! args.length) {
+    return;
+  }
+
+  var path = args[0];
+  var dst = this.dir.getDir(path);
+
+  if ( ! dst) {
+    this.print('File or Directory not found');
+  } else if (dst.type != 'file') {
+    this.print(dst.name + 'is not a file.');
+  } else {
+    this.print(dst.content);
+  }
+}
 
 
 function Directory(name) {
