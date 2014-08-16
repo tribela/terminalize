@@ -8,8 +8,8 @@
     <link rel="stylesheet" href="terminal.css" type="text/css" media="all">
     <script type="text/javascript" charset="utf-8">
       $(function() {
-        new Terminal($('#terminal'), {
-          issue: 'Terminalized.\ntype "help" to list commands.',
+        $('.convert-terminal').click(function() {
+          new Terminal($('#terminal'));
         });
       });
     </script>
@@ -28,8 +28,30 @@
     <title>Terminalize</title>
   </head>
   <body>
+    <article>
+      <h1>Terminalize</h1>
+      <p>write html like below. This can be converted to terminal-like UI.</p>
+      <ul>
+        <li><code>&lt;li&gt;
+            <br />&nbsp;&lt;h1&gt;filename&lt;/h1&gt;
+            <br />&nbsp;content
+            <br />&lt;/li&gt;</code>
+          <br />to make a regular file.</li>
+        <li><code>&lt;li&gt;
+            <br />&nbsp;&lt;h1&gt;directory name&lt;/h1&gt;
+            <br />&nbsp;&lt;ul&gt;
+            <br />&nbsp;&lt;/ul&gt;
+            <br />&lt;/li&gt;</code>
+          <br />to make a directory.</li>
+        <li><code>&lt;li&gt;
+            <br />&lt;a href="location"&gt;link name&lt;/a&gt;
+            <br />&lt;/li&gt;</code>
+          <br />to make a link (it works like a directory. cd <em>name</em> to move page).</li>
+      </ul>
+      <button class="convert-terminal">Click this button to convert</button>
+    </article>
     <ul id="terminal">
-      <li><a href="/wordpress/">blog</a></li>
+      <li><a href="https://kjwon15.net/wordpress/">blog</a></li>
       <li><a href="/tools/">tools</a></li>
       <li>
         <h1>subdirectory</h1>
