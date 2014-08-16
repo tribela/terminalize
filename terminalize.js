@@ -184,6 +184,12 @@ var terminalize = function(elem) {
         );
   }
 
+  commands.help = function() {
+    for (command in commands) {
+      print(command);
+    }
+  }
+
 
   main.addClass('terminal-main');
   log.addClass('terminal-log');
