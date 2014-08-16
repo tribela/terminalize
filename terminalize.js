@@ -185,7 +185,7 @@ var terminalize = function(elem) {
   };
 
   var parseList = function(elem, dir) {
-    var lis = $(elem).find('li');
+    var lis = $(elem).children('li');
     lis.each(function() {
       var name = $(this).children('h1').text();
       var uls = $(this).children('ul');
