@@ -182,7 +182,7 @@ var terminalize = function(elem) {
         .replace('|HOST|', 'localhost')
         .replace('|PWD|', pwd)
         );
-  }
+  };
 
   commands.help = function() {
     for (command in commands) {
