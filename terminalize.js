@@ -7,10 +7,14 @@ var terminalize = function(elem) {
   var input = $('<input>');
   var lis = $(elem).children('li');
 
-  var print = function(msg) {
+  var print = function(msg, isHtml) {
     var pre = $('<pre>');
     pre.addClass('terminal-output');
-    pre.text(msg);
+    if (isHtml) {
+      pre.html(msg);
+    } else {
+      pre.text(msg);
+    }
     log.append(pre);
   };
 
