@@ -127,11 +127,13 @@ Terminal.prototype.doCommand = function() {
   this.print(psStr + escapedLine, true);
 
   var args = this.parseLine(line);
-  var command = args.shift();
-  if (command in this.commands) {
-    this.commands[command](args);
-  } else {
-    this.print('command not found: ' + command);
+  if (args.length) {
+    var command = args.shift();
+    if (command in this.commands) {
+      this.commands[command](args);
+    } else {
+      this.print('command not found: ' + command);
+    }
   }
 
   this.input.val(null);
@@ -232,7 +234,7 @@ Terminal.prototype.parseLine = function(command){
     }
     return args
   }else{
-    print("Command line parse error");
+    this.print("Command line parse error");
   }
 };
 
