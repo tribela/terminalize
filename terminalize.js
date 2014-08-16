@@ -8,6 +8,7 @@ var terminalize = function(elem) {
   var lis = $(elem).children('li');
 
   var ps1Str = '<span class="terminal-red">|ID|</span>@<span class="terminal-blue">|HOST|</span>:<span class="terminal-yellow">|PWD|</span>$&nbsp;';
+  var commands = {};
   var pwd = '/';
   var histories = [];
   var historyPointer = 0;
@@ -60,12 +61,120 @@ var terminalize = function(elem) {
   };
 
   var doCommand = function() {
-    var command = input.val();
+    var line = input.val();
     var psStr = ps1.html();
-    var escapedCommand = $('<span>').text(command).html();
-    print(psStr + escapedCommand, true);
+    var escapedLine = $('<span>').text(line).html();
+    print(psStr + escapedLine, true);
+
+    var args = parseLine(line);
+    var command = args.shift();
+    if (command in commands) {
+      commands[command](args);
+    } else {
+      print('command not found: ' + command);
+    }
+
     input.val(null);
   };
+
+  var parseLine = function(command){
+    var states = {
+      normal: 'normal',
+      whitespace: 'whitespace',
+      backslash: 'backslash',
+      quote: 'quote',
+      singlequote: 'singlequote'
+    };
+    var state = states.normal;
+    var prevstate = state; // for backslash mode
+
+    var args = [];
+    var buffer = "";
+    for(var i=0; i<command.length; i++){
+      var input = command[i];
+      switch(state){
+        case states.normal:
+          switch(input){
+            case '\\':
+              prevstate = state;
+              state = states.backslash;
+              break;
+            case '\"':
+              state = states.quote;
+              break;
+            case '\'':
+              state = states.singlequote;
+              break;
+            case ' ':
+              state = states.whitespace;
+              args.push(buffer);
+              buffer = "";
+              break;
+            default:
+              buffer += input;
+          }
+          break;
+        case states.whitespace:
+          switch(input){
+            case ' ':
+              break;
+            case '\\':
+              //new character. same as default
+              prevstate = states.normal;
+              state = states.backslash;
+              break;
+            case '\"':
+              state = states.quote;
+              break;
+            case '\'':
+              state = states.singlequote;
+              break;
+            default:
+              buffer += input;
+              state = states.normal;
+          }
+          break;
+        case states.backslash:
+          buffer += input;
+          state = prevstate;
+          break;
+        case states.quote:
+          switch(input){
+            case '\"':
+              state = states.normal;
+              break;
+            case '\\':
+              prevstate = state;
+              state = states.backslash;
+              break;
+            default:
+              buffer += input;
+          }
+          break;
+        case states.singlequote:
+          switch(input){
+            case '\'':
+              state = states.normal;
+              break;
+            case '\\':
+              prevstate = state;
+              state = states.backslash;
+              break;
+            default:
+              buffer += input;
+          }
+          break;
+      }
+    }
+    if(state == states.normal || state == states.whitespace){
+      if(buffer.length > 0){
+        args.push(buffer);
+      }
+      return args
+    }else{
+      print("Command line parse error");
+    }
+  }
 
   var parsePs1 = function() {
     ps1.html(ps1Str
