@@ -279,6 +279,11 @@ var terminalize = function(elem) {
     var path = args[0];
     var dst = dir.getDir(path);
 
+    if ( ! dst) {
+      print('File or directory not found.');
+      return;
+    }
+
     switch(dst.type) {
       case 'directory':
         dir = dst;
