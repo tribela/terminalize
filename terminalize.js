@@ -5,11 +5,11 @@ var terminalize = function(elem) {
   var ps1 = $('<span>');
   var inputWrap = $('<div>');
   var input = $('<input>');
-  var lis = $(elem).children('li');
 
   var ps1Str = '<span class="terminal-red">|ID|</span>@<span class="terminal-blue">|HOST|</span>:<span class="terminal-yellow">|PWD|</span>$&nbsp;';
   var commands = {};
-  var pwd = '/';
+  var root = new Directory();
+  var dir = root;
   var histories = [];
   var historyPointer = 0;
   var lineBuffer;
@@ -180,8 +180,35 @@ var terminalize = function(elem) {
     ps1.html(ps1Str
         .replace('|ID|', 'guest')
         .replace('|HOST|', 'localhost')
-        .replace('|PWD|', pwd)
+        .replace('|PWD|', dir.getPath())
         );
+  };
+
+  var parseList = function(elem, dir) {
+    var lis = $(elem).find('li');
+    lis.each(function() {
+      var name = $(this).children('h1').text();
+      var uls = $(this).children('ul');
+      var anchor = $(this).children('a');
+      var content = $(this).contents().filter(function() {
+        return this.nodeType == 3;
+      }).text();
+      var current;
+
+      if (uls.length) {
+        current = new Directory(name);
+        dir.append(current);
+        uls.each(function() {
+          parseList(this, current);
+        });
+      } else if (anchor.length) {
+        current = new SpecialDirectory(anchor.text(), anchor.attr('href'));
+        dir.append(current);
+      } else {
+        current = new File(name, content);
+        dir.append(current);
+      }
+    });
   };
 
   commands.help = function() {
@@ -189,6 +216,63 @@ var terminalize = function(elem) {
       print(command);
     }
   };
+
+  commands.ls = function(args) {
+    var showHidden = false;
+    var verbose = false;
+    var destination = dir.getPath();
+    var results;
+    var output;
+
+    for(var i=0; i<args.length; i++){
+      if(args[i][0] == '-'){
+        if(args[i].indexOf('a') > -1){
+          showHidden = true;
+        }
+        if(args[i].indexOf('l') > -1){
+          verbose = true;
+        }
+      }else{
+        destination = args[i];
+      }
+    }
+
+    var obj = dir.getDir(destination);
+    if (obj == null) {
+      print('File or directory not found.');
+      return;
+    }
+
+    if (obj.type == 'directory') {
+      results = obj.list(showHidden);
+    } else {
+      results = [obj];
+    }
+
+    output = results.map(function(obj) {
+      var format;
+      var name;
+      switch(obj.type) {
+        case 'directory':
+          format = 'dr-xr-xr-x';
+          name = '<span class="terminal-blue">' + obj.name + '</span>';
+          break;
+        case 'specialdirectory':
+          format = 'sr-xr-xr-x';
+          name = '<span class="terminal-yellow">' + obj.name + '</span>';
+          break;
+        default:
+          format = '-r-xr-xr-x';
+          name = obj.name;
+      }
+      return (verbose?format + ' ':'') + name;
+    });
+
+    print(output.join(verbose?'\n':' '), true);
+  };
+
+
+  parseList(elem, root);
 
 
   main.addClass('terminal-main');
