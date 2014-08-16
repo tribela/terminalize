@@ -192,7 +192,7 @@ var terminalize = function(elem) {
       var anchor = $(this).children('a');
       var content = $(this).contents().filter(function() {
         return this.nodeType == 3;
-      }).text();
+      }).text().trim();
       var current;
 
       if (uls.length) {
@@ -288,6 +288,23 @@ var terminalize = function(elem) {
         break;
       default:
         print(dst.name + ' is not a directory.');
+    }
+  }
+
+  commands.cat = function(args) {
+    if ( ! args.length) {
+      return;
+    }
+
+    var path = args[0];
+    var dst = dir.getDir(path);
+
+    if ( ! dst) {
+      print('File or Directory not found');
+    } else if (dst.type != 'file') {
+      print(dst.name + 'is not a file.');
+    } else {
+      print(dst.content);
     }
   }
 
