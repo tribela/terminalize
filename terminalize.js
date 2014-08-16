@@ -312,6 +312,7 @@ Terminal.prototype.commandLs = function(args) {
   output = results.map(function(obj) {
     var format;
     var name;
+    var desc;
     switch(obj.type) {
       case 'directory':
         format = 'dr-xr-xr-x';
@@ -320,12 +321,16 @@ Terminal.prototype.commandLs = function(args) {
       case 'specialdirectory':
         format = 'sr-xr-xr-x';
         name = '<span class="terminal-yellow">' + obj.name + '</span>';
+        desc = '-> ' + obj.dest;
         break;
       default:
         format = '-r-xr-xr-x';
         name = obj.name;
     }
-    return (verbose?format + ' ':'') + name;
+    if (verbose) {
+      return [format, name, desc].join(' ');
+    }
+    return name;
   });
 
   this.print(output.join(verbose?'\n':' '), true);
