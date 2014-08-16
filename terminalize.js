@@ -43,12 +43,14 @@ var Terminal = function(elem, options) {
   this.input.on('keydown', $.proxy(this.keyHandler, this));
   this.main.on('click', $.proxy(function() { this.input.focus(); }, this));
 
-  if ('issue' in options) {
-    this.print(options.issue);
-  }
+  if (options) {
+    if ('issue' in options) {
+      this.print(options.issue);
+    }
 
-  if ('ps1' in options) {
-    this.ps1Str = options.ps1;
+    if ('ps1' in options) {
+      this.ps1Str = options.ps1;
+    }
   }
 
   $(elem).replaceWith(this.main);
