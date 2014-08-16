@@ -9,6 +9,9 @@ var terminalize = function(elem) {
 
   var ps1Str = '<span class="terminal-red">|ID|</span>@<span class="terminal-blue">|HOST|</span>:<span class="terminal-yellow">|PWD|</span>$&nbsp;';
   var pwd = '/';
+  var histories = [];
+  var historyPointer = 0;
+  var lineBuffer;
 
   var print = function(msg, isHtml) {
     var pre = $('<pre>');
@@ -25,8 +28,33 @@ var terminalize = function(elem) {
     switch(event.keyCode) {
       case 0x0d: // Return
         event.preventDefault();
+        if (input.val()) {
+          histories.push(input.val());
+        }
+        historyPointer = histories.length;
         doCommand();
         parsePs1();
+        break;
+      case 0x26: // Up arrow
+        if (historyPointer == histories.length) {
+          lineBuffer = input.val();
+        }
+        if (historyPointer > 0) {
+          historyPointer -= 1;
+          input.val(histories[historyPointer]);
+        }
+        break;
+      case 0x28: // Down arrow
+        if (historyPointer >= histories.length) {
+          break;
+        }
+
+        historyPointer += 1;
+        if (historyPointer == histories.length) {
+          input.val(lineBuffer);
+        } else {
+          input.val(histories[historyPointer]);
+        }
         break;
     }
   };
