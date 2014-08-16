@@ -34,7 +34,8 @@ var terminalize = function(elem) {
   var doCommand = function() {
     var command = input.val();
     var psStr = ps1.html();
-    print(psStr + command, true);
+    var escapedCommand = $('<span>').text(command).html();
+    print(psStr + escapedCommand, true);
     input.val(null);
   };
 
