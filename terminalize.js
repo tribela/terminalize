@@ -232,7 +232,7 @@ Terminal.prototype.parseLine = function(command){
     }
     return args
   }else{
-    print("Command line parse error");
+    this.print("Command line parse error");
   }
 };
 
