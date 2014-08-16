@@ -321,13 +321,13 @@ var terminalize = function(elem) {
 function Directory(name) {
   this.type = 'directory';
   this.name = name;
-  this.upperDir = null;
+  this.upper = null;
   this.children = [];
 };
 
 Directory.prototype.append = function(obj) {
   this.children.push(obj);
-  obj.upperDir = this;
+  obj.upper = this;
 };
 
 Directory.prototype.list = function(showHidden) {
@@ -358,7 +358,7 @@ Directory.prototype.getPath = function() {
     arr.unshift(dir.name);
     dir = dir.upper;
   }
-  return '/' + arr.join('/');
+  return arr.join('/');
 }
 
 Directory.prototype.getDir = function(dir){
