@@ -212,3 +212,116 @@ var terminalize = function(elem) {
   $(elem).replaceWith(main);
   input.focus();
 };
+
+
+function Directory(name) {
+  this.type = 'directory';
+  this.name = name;
+  this.upperDir = null;
+  this.children = [];
+};
+
+Directory.prototype.append = function(obj) {
+  this.children.push(obj);
+  obj.upperDir = this;
+};
+
+Directory.prototype.list = function(showHidden) {
+  return this.children.filter(function(obj) {
+    if (obj.name[0] == '.' && ! showHidden) {
+      return false;
+    }
+    return true;
+  });
+};
+
+Directory.prototype.getChild = function(name) {
+  var filtered = this.children.filter(function(obj) {
+    return (obj.name == name)?true:false;
+  });
+  if (filtered.length) {
+    return filtered[0];
+  }
+}
+
+Directory.prototype.getPath = function() {
+  if (this.upper == null) {
+    return '/';
+  }
+  var arr = [];
+  var dir = this;
+  while (dir) {
+    arr.unshift(dir.name);
+    dir = dir.upper;
+  }
+  return '/' + arr.join('/');
+}
+
+Directory.prototype.getDir = function(dir){
+  var curdir = this;
+  var root = curdir;
+
+  while (root.upper) {
+    root = root.upper;
+  }
+
+  if(dir == "/"){
+    return root;
+  }else if(dir == ""){
+    return this;
+  }else if(dir[0] == '/'){
+    curdir = root;
+    dir = dir.slice(1);
+  }else{
+    curdir = this;
+  }
+
+  //remove last slash
+  if(dir[dir.length-1] == '/'){
+    dir = dir.slice(0, dir.length-1);
+  }
+  var dirs = dir.split('/');
+  for(var i=0; i<dirs.length; i++){
+    dirname = dirs[i];
+    if(dirname == ".."){
+      curdir = curdir.upper;
+    }else if(dirname == "."){
+      curdir = curdir;
+    }else{
+      curdir = curdir.getChildByName(dirname);
+    }
+
+    if(curdir == null){
+      return null;
+    }else if(i < dirs.length-1 && curdir.type != 'directory'){
+      return null;
+    }
+  }
+  return curdir;
+}
+
+Directory.prototype.getSize = function() {
+  return 4092;
+}
+
+function SpecialDirectory(name, dest){
+  this.type='specialdirectory';
+  this.name = name;
+  this.upper = null;
+  this.dest = dest;
+}
+
+SpecialDirectory.prototype.getSize = function(){
+  return 4092;
+}
+
+function File(name, content){
+  this.type = 'file';
+  this.name = name;
+  this.upper = null;
+  this.content = content;
+}
+
+File.prototype.getSize = function(){
+  return this.content.length;
+}
