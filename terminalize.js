@@ -329,6 +329,7 @@ var terminalize = function(elem) {
   inputWrap.append(input);
 
   input.on('keydown', keyHandler);
+  main.on('click', function() { input.focus(); });
 
   $(elem).replaceWith(main);
   input.focus();
