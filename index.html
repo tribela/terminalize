@@ -8,7 +8,9 @@
     <link rel="stylesheet" href="terminal.css" type="text/css" media="all">
     <script type="text/javascript" charset="utf-8">
       $(function() {
-        new Terminal($('#terminal'));
+        new Terminal($('#terminal'), {
+          issue: 'Terminalized.\ntype "help" to list commands.',
+        });
       });
     </script>
     <style type="text/css">

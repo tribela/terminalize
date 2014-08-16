@@ -1,4 +1,4 @@
-var Terminal = function(elem) {
+var Terminal = function(elem, options) {
   this.main = $('<div>');
   this.log = $('<div>');
   this.ps1 = $('<span>');
@@ -7,7 +7,7 @@ var Terminal = function(elem) {
   var lastLine = $('<div>');
   var inputWrap = $('<div>');
 
-  this.ps1Str = '<span class="terminal-red">|ID|</span>@<span class="terminal-blue">|HOST|</span>:<span class="terminal-yellow">|PWD|</span>$&nbsp;';
+  this.ps1Str = '<span class="terminal-red">guest</span>@<span class="terminal-blue">localhost</span>:<span class="terminal-yellow">|PWD|</span>$&nbsp;';
   this.root = new Directory();
   this.dir = this.root;
   this.histories = [];
@@ -42,6 +42,14 @@ var Terminal = function(elem) {
 
   this.input.on('keydown', $.proxy(this.keyHandler, this));
   this.main.on('click', $.proxy(function() { this.input.focus(); }, this));
+
+  if ('issue' in options) {
+    this.print(options.issue);
+  }
+
+  if ('ps1' in options) {
+    this.ps1Str = options.ps1;
+  }
 
   $(elem).replaceWith(this.main);
   this.input.focus();
@@ -227,8 +235,6 @@ Terminal.prototype.parseLine = function(command){
 
 Terminal.prototype.parsePs1 = function() {
   this.ps1.html(this.ps1Str
-      .replace('|ID|', 'guest')
-      .replace('|HOST|', 'localhost')
       .replace('|PWD|', this.dir.getPath())
       );
 };
