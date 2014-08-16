@@ -7,6 +7,13 @@ var terminalize = function(elem) {
   var input = $('<input>');
   var lis = $(elem).children('li');
 
+  var print = function(msg) {
+    var pre = $('<pre>');
+    pre.addClass('terminal-output');
+    pre.text(msg);
+    log.append(pre);
+  };
+
 
   main.addClass('terminal-main');
   log.addClass('terminal-log');
