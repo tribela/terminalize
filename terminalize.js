@@ -91,6 +91,21 @@ Terminal.prototype.keyHandler = function(event) {
         this.input.val(this.histories[this.historyPointer]);
       }
       break;
+    case 0x09: // Tab
+      event.preventDefault();
+      var args = this.parseLine(this.input.val());
+      var paths = args[args.length-1].split('/');
+      var uncompleted = paths.pop();
+      var baseDir = paths.join('/');
+      var candidates = this.dir.getDir(baseDir).list();
+      var matched = candidates.filter(function(val) {
+        return val.name.indexOf(uncompleted) == 0;
+      });
+      if (matched.length == 1) {
+        var appendStr = matched[0].name.slice(uncompleted.length);
+        this.input.val(this.input.val() + appendStr);
+      }
+      break;
   }
 };
 
