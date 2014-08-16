@@ -65,7 +65,6 @@ var terminalize = function(elem) {
 
   input.on('keydown', keyHandler);
 
-  $(elem).after(main);
-  $(elem).remove();
+  $(elem).replaceWith(main);
   input.focus();
 };
