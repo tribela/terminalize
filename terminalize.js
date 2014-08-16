@@ -188,7 +188,7 @@ var terminalize = function(elem) {
     for (command in commands) {
       print(command);
     }
-  }
+  };
 
 
   main.addClass('terminal-main');
