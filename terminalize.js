@@ -367,7 +367,7 @@ Terminal.prototype.commandCat = function(args) {
   if ( ! dst) {
     this.print('File or Directory not found');
   } else if (dst.type != 'file') {
-    this.print(dst.name + 'is not a file.');
+    this.print(dst.name + ' is not a file.');
   } else {
     this.print(dst.content);
   }
