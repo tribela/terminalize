@@ -23,6 +23,16 @@ var Terminal = function(elem, options) {
 
   parseList(elem, this.root);
 
+  if (options) {
+    if ('issue' in options) {
+      this.print(options.issue);
+    }
+
+    if ('ps1' in options) {
+      this.ps1Str = options.ps1;
+    }
+  }
+
 
   this.main.addClass('terminal-main');
   this.log.addClass('terminal-log');
@@ -42,16 +52,6 @@ var Terminal = function(elem, options) {
 
   this.input.on('keydown', $.proxy(this.keyHandler, this));
   this.main.on('click', $.proxy(function() { this.input.focus(); }, this));
-
-  if (options) {
-    if ('issue' in options) {
-      this.print(options.issue);
-    }
-
-    if ('ps1' in options) {
-      this.ps1Str = options.ps1;
-    }
-  }
 
   $(elem).replaceWith(this.main);
   this.input.focus();
