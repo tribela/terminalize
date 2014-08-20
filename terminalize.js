@@ -108,7 +108,7 @@ Terminal.prototype.keyHandler = function(event) {
       var paths = args[args.length-1].split('/');
       var uncompleted = paths.pop();
       var baseDir = paths.join('/');
-      var candidates = this.dir.getDir(baseDir).list();
+      var candidates = this.dir.getDir(baseDir).list(true);
       var matched = candidates.filter(function(val) {
         return val.name.indexOf(uncompleted) == 0;
       });
