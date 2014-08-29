@@ -251,8 +251,10 @@ var parseList = function(elem, dir) {
     var uls = $(this).children('ul');
     var anchor = $(this).children('a');
     var content = $(this).contents().filter(function() {
-      return this.nodeType == 3;
-    }).text().trim();
+      return this.nodeName.toLowerCase() != 'h1';
+    }).map(function() {
+      return $(this).text().trim() || null;
+    }).get().join('\n');
     var current;
 
     if (uls.length) {
