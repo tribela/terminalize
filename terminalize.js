@@ -114,6 +114,9 @@ Terminal.prototype.keyHandler = function(event) {
       });
       if (matched.length == 1) {
         var appendStr = matched[0].name.slice(uncompleted.length);
+        if ('children' in matched[0]) {
+          appendStr += '/';
+        }
         this.input.val(this.input.val() + appendStr);
       }
       break;
