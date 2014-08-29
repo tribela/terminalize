@@ -23,6 +23,16 @@ var Terminal = function(elem, options) {
 
   parseList(elem, this.root);
 
+  if (options) {
+    if ('issue' in options) {
+      this.print(options.issue);
+    }
+
+    if ('ps1' in options) {
+      this.ps1Str = options.ps1;
+    }
+  }
+
 
   this.main.addClass('terminal-main');
   this.log.addClass('terminal-log');
@@ -42,16 +52,6 @@ var Terminal = function(elem, options) {
 
   this.input.on('keydown', $.proxy(this.keyHandler, this));
   this.main.on('click', $.proxy(function() { this.input.focus(); }, this));
-
-  if (options) {
-    if ('issue' in options) {
-      this.print(options.issue);
-    }
-
-    if ('ps1' in options) {
-      this.ps1Str = options.ps1;
-    }
-  }
 
   $(elem).replaceWith(this.main);
   this.input.focus();
@@ -108,12 +108,15 @@ Terminal.prototype.keyHandler = function(event) {
       var paths = args[args.length-1].split('/');
       var uncompleted = paths.pop();
       var baseDir = paths.join('/');
-      var candidates = this.dir.getDir(baseDir).list();
+      var candidates = this.dir.getDir(baseDir).list(true);
       var matched = candidates.filter(function(val) {
         return val.name.indexOf(uncompleted) == 0;
       });
       if (matched.length == 1) {
         var appendStr = matched[0].name.slice(uncompleted.length);
+        if ('children' in matched[0]) {
+          appendStr += '/';
+        }
         this.input.val(this.input.val() + appendStr);
       }
       break;
@@ -251,8 +254,10 @@ var parseList = function(elem, dir) {
     var uls = $(this).children('ul');
     var anchor = $(this).children('a');
     var content = $(this).contents().filter(function() {
-      return this.nodeType == 3;
-    }).text().trim();
+      return this.nodeName.toLowerCase() != 'h1';
+    }).map(function() {
+      return $(this).text().trim() || null;
+    }).get().join('\n');
     var current;
 
     if (uls.length) {
