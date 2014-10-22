@@ -25,6 +25,8 @@ var Terminal = function(elem, options) {
   if (options) {
     if ('issue' in options) {
       this.print(options.issue);
+    } else {
+      this.print('<span class="terminal-blue">Terminalize</span> made by <span class="terminal-red">Kjwon15</span>\n<a href="https://github.com/Kjwon15/terminalize">https://github.com/Kjwon15/terminalize</a>', true);
     }
 
     if ('ps1' in options) {
