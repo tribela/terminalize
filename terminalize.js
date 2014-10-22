@@ -18,6 +18,7 @@ var Terminal = function(elem, options) {
     cd: $.proxy(this.commandCd, this),
     cat: $.proxy(this.commandCat, this),
     pwd: $.proxy(this.commandPwd, this),
+    echo: $.proxy(this.commandEcho, this),
   };
 
   parseList(elem, this.root);
@@ -386,6 +387,11 @@ Terminal.prototype.commandCat = function(args) {
 Terminal.prototype.commandPwd = function(args) {
   var path = this.dir.getPath();
   this.print(path);
+}
+
+Terminal.prototype.commandEcho = function(args) {
+  var message = args.join(' ');
+  this.print(message);
 }
 
 function Directory(name) {
