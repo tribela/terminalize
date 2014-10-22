@@ -15,6 +15,7 @@
   display: table-cell;
   width: 1%;
   bottom: 0;
+  white-space: nowrap;
 }
 
 .terminal-lastline {
