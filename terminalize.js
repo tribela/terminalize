@@ -19,6 +19,7 @@ var Terminal = function(elem, options) {
     ls: $.proxy(this.commandLs, this),
     cd: $.proxy(this.commandCd, this),
     cat: $.proxy(this.commandCat, this),
+    pwd: $.proxy(this.commandPwd, this),
   };
 
   parseList(elem, this.root);
@@ -383,6 +384,10 @@ Terminal.prototype.commandCat = function(args) {
   }
 }
 
+Terminal.prototype.commandPwd = function(args) {
+  var path = this.dir.getPath();
+  this.print(path);
+}
 
 function Directory(name) {
   this.type = 'directory';
