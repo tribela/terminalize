@@ -12,25 +12,28 @@
 }
 
 .terminal-ps1 {
-  float: left;
+  display: table-cell;
+  width: 1%;
   bottom: 0;
 }
 
-.terminal-input-wrap {
-    overflow: hidden;
-    height: auto;
-    height: 1%;
+.terminal-lastline {
+  display: table;
+  width: 100%;
+  height: auto;
+  height: 1%;
 }
 
 .terminal-input {
-    width: 100%;
-    background: transparent;
-    color: white;
-    border: 0 none;
-    margin: 0;
-    padding: 0;
-    outline: 0 none;
-    font: inherit;
+  display: table-cell;
+  width: 100%;
+  background: transparent;
+  color: white;
+  border: 0 none;
+  margin: 0;
+  padding: 0;
+  outline: 0 none;
+  font: inherit;
 }
 
 .terminal-green {

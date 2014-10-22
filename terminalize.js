@@ -1,11 +1,9 @@
 var Terminal = function(elem, options) {
   this.main = $('<div>');
   this.log = $('<div>');
+  this.lastLine = $('<div>');
   this.ps1 = $('<span>');
   this.input = $('<input>');
-
-  var lastLine = $('<div>');
-  var inputWrap = $('<div>');
 
   this.ps1Str = '<span class="terminal-red">guest</span>@<span class="terminal-blue">localhost</span>:<span class="terminal-yellow">|PWD|</span>$&nbsp;';
   this.root = new Directory();
@@ -37,19 +35,18 @@ var Terminal = function(elem, options) {
 
   this.main.addClass('terminal-main');
   this.log.addClass('terminal-log');
+  this.lastLine.addClass('terminal-lastline');
   this.ps1.addClass('terminal-ps1');
-  inputWrap.addClass('terminal-input-wrap');
   this.input.addClass('terminal-input');
 
 
   this.parsePs1();
 
   this.main.append(this.log);
-  this.main.append(lastLine);
+  this.main.append(this.lastLine);
 
-  lastLine.append(this.ps1);
-  lastLine.append(inputWrap);
-  inputWrap.append(this.input);
+  this.lastLine.append(this.ps1);
+  this.lastLine.append(this.input);
 
   this.input.on('keydown', $.proxy(this.keyHandler, this));
   this.main.on('click', $.proxy(function() { this.input.focus(); }, this));
