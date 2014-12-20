@@ -19,6 +19,7 @@ var Terminal = function(elem, options) {
     cat: $.proxy(this.commandCat, this),
     pwd: $.proxy(this.commandPwd, this),
     echo: $.proxy(this.commandEcho, this),
+    file: $.proxy(this.commandFile, this),
   };
 
   parseList(elem, this.root);
@@ -392,6 +393,32 @@ Terminal.prototype.commandPwd = function(args) {
 Terminal.prototype.commandEcho = function(args) {
   var message = args.join(' ');
   this.print(message);
+}
+
+Terminal.prototype.commandFile = function(args) {
+  if ( ! args.length) {
+    this.print('Usage: file <path>');
+    return;
+  }
+
+  var path = args[0];
+  var dst = this.dir.getDir(path);
+
+  if (dst) {
+    switch(dst.type) {
+      case 'directory':
+        this.print(dst.name + ': directory');
+        break;
+      case 'file':
+        this.print(dst.name + ': text file');
+        break;
+      case 'specialdirectory':
+        this.print(dst.name + ': special directory to ' + dst.dest);
+        break;
+    }
+  } else {
+    this.print('File or directory not found.');
+  }
 }
 
 function Directory(name) {
